@@ -49,6 +49,38 @@ app.delete("/api/users/:id",(req,res)=>{
     }
 })
 
-app.put()
+app.put("/api/user/:id", (req, res) => {
+    const id = Number(req.params.id); // Convert the id to a number
+    const { first_name, last_name, email, gender } = req.body; // Extract fields from the request body
+
+    const existingUserIndex = users.findIndex(user => user.id === id);
+
+    if (existingUserIndex === -1) {
+        // If the user does not exist, return a 404 response
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    const updatedUser = {
+        ...users[existingUserIndex], // Keep the existing fields
+        first_name: first_name || users[existingUserIndex].first_name,
+        last_name: last_name || users[existingUserIndex].last_name,
+        email: email || users[existingUserIndex].email,
+        gender: gender || users[existingUserIndex].gender,
+    };
+
+    // Replace the old user data with the updated data
+    users[existingUserIndex] = updatedUser;
+
+    // Write the updated users array to MOCK_DATA.json
+    fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Error saving data" });
+        }
+
+        res.json({ message: "User updated successfully", user: updatedUser });
+    });
+});
+
 
 app.listen(9000,()=>console.log("servr started on 9000"));
